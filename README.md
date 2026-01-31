@@ -1,4 +1,4 @@
-# HRMS Lite
+# Human Resource Management System Lite
 
 A production-grade Internal HR Tool for Employee and Attendance Management.
 
@@ -76,4 +76,5 @@ A production-grade Internal HR Tool for Employee and Attendance Management.
 ## 📝 Assumptions
 - PostgreSQL is available locally or via connection string.
 - Node.js (v18+) and Python (3.9+) are installed.
+
 - "Production-grade" refers to code structure/practices, though validation/tests are minimal for this scope.
