@@ -78,3 +78,4 @@ A production-grade Internal HR Tool for Employee and Attendance Management.
 - Node.js (v18+) and Python (3.9+) are installed.
 
 - "Production-grade" refers to code structure/practices, though validation/tests are minimal for this scope.
+- Portal is opened as Admin 
