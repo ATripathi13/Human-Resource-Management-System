@@ -53,3 +53,22 @@ def get_attendance_by_employee(db: Session, employee_id: int, from_date: date = 
     if to_date:
         query = query.filter(models.Attendance.date <= to_date)
     return query.all()
+
+# --- Dashboard Stats ---
+
+def count_employees(db: Session):
+    return db.query(models.Employee).count()
+
+def count_present_today(db: Session):
+    today = date.today()
+    return db.query(models.Attendance).filter(
+        models.Attendance.date == today,
+        models.Attendance.status == models.AttendanceStatus.PRESENT
+    ).count()
+
+def count_absent_today(db: Session):
+    today = date.today()
+    return db.query(models.Attendance).filter(
+        models.Attendance.date == today,
+        models.Attendance.status == models.AttendanceStatus.ABSENT
+    ).count()
