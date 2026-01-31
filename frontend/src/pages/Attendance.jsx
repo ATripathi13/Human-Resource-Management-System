@@ -146,6 +146,28 @@ const Attendance = () => {
                 </div>
             </div>
 
+            {/* Attendance Summary */}
+            {selectedEmployee && attendanceRecords.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className="bg-white p-4 rounded-lg shadow border-l-4 border-indigo-500">
+                        <div className="text-gray-500 text-sm">Total Records</div>
+                        <div className="text-2xl font-bold text-gray-800">{attendanceRecords.length}</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
+                        <div className="text-gray-500 text-sm">Present Days</div>
+                        <div className="text-2xl font-bold text-green-600">
+                            {attendanceRecords.filter(r => r.status === 'Present').length}
+                        </div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
+                        <div className="text-gray-500 text-sm">Absent Days</div>
+                        <div className="text-2xl font-bold text-red-600">
+                            {attendanceRecords.filter(r => r.status === 'Absent').length}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {
                 loading ? (
                     <div className="flex justify-center p-8">
