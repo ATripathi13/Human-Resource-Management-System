@@ -46,5 +46,10 @@ def create_attendance(db: Session, attendance: schemas.AttendanceCreate):
     db.refresh(db_attendance)
     return db_attendance
 
-def get_attendance_by_employee(db: Session, employee_id: int):
-    return db.query(models.Attendance).filter(models.Attendance.employee_id == employee_id).all()
+def get_attendance_by_employee(db: Session, employee_id: int, from_date: date = None, to_date: date = None):
+    query = db.query(models.Attendance).filter(models.Attendance.employee_id == employee_id)
+    if from_date:
+        query = query.filter(models.Attendance.date >= from_date)
+    if to_date:
+        query = query.filter(models.Attendance.date <= to_date)
+    return query.all()
