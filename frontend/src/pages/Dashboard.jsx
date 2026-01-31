@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Users, UserCheck, UserX, BarChart3 } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -83,14 +84,14 @@ const Dashboard = () => {
             <div className="mt-8 bg-white p-6 rounded-lg shadow">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <a href="/employees" className="block p-4 border rounded-lg hover:bg-gray-50 transition-colors group">
+                    <Link to="/employees" className="block p-4 border rounded-lg hover:bg-gray-50 transition-colors group">
                         <div className="font-medium text-indigo-600 group-hover:underline">Manage Employees &rarr;</div>
                         <div className="text-sm text-gray-500">Add, edit, or remove staff members.</div>
-                    </a>
-                    <a href="/attendance" className="block p-4 border rounded-lg hover:bg-gray-50 transition-colors group">
+                    </Link>
+                    <Link to="/attendance" className="block p-4 border rounded-lg hover:bg-gray-50 transition-colors group">
                         <div className="font-medium text-indigo-600 group-hover:underline">Track Attendance &rarr;</div>
                         <div className="text-sm text-gray-500">Mark daily attendance and view history.</div>
-                    </a>
+                    </Link>
                 </div>
             </div>
         </div>
