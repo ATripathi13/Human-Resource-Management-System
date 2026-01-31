@@ -11,10 +11,7 @@ const Attendance = () => {
     const [attendanceRecords, setAttendanceRecords] = useState([]);
     const [selectedEmployee, setSelectedEmployee] = useState('');
     const [loading, setLoading] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [fromDate, setFromDate] = useState('');
-    const [toDate, setToDate] = useState('');
 
     // Form State
     const [formData, setFormData] = useState({
@@ -36,32 +33,29 @@ const Attendance = () => {
         fetchEmployees();
     }, []);
 
-    // Fetch attendance when selected employee changes
+    const [dateFilter, setDateFilter] = useState({ from: '', to: '' });
+
+    // Fetch attendance when selected employee or date filters change
     useEffect(() => {
         if (selectedEmployee) {
             fetchAttendance(selectedEmployee);
         } else {
             setAttendanceRecords([]);
         }
-    }, [selectedEmployee, fromDate, toDate]);
+    }, [selectedEmployee, dateFilter]);
 
     const fetchAttendance = async (empId) => {
         try {
             setLoading(true);
             let url = `/attendance/${empId}`;
             const params = new URLSearchParams();
-            if (fromDate) params.append('from_date', fromDate);
-            if (toDate) params.append('to_date', toDate);
-
-            if (params.toString()) {
-                url += `?${params.toString()}`;
-            }
+            if (dateFilter.from) params.append('from_date', dateFilter.from);
+            if (dateFilter.to) params.append('to_date', dateFilter.to);
+            if (params.toString()) url += `?${params.toString()}`;
 
             const response = await api.get(url);
             setAttendanceRecords(response.data);
         } catch (error) {
-            // If 404, it might mean no records or connection error. 
-            // Requirement says "View attendance history", possibly none yet.
             console.error(error);
             setAttendanceRecords([]);
         } finally {
@@ -129,133 +123,122 @@ const Attendance = () => {
                             <option key={emp.id} value={emp.id}>{emp.full_name} ({emp.employee_id})</option>
                         ))}
                     </select>
+                </select>
+
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">From:</span>
+                    <input
+                        type="date"
+                        className="border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border px-2 py-1"
+                        value={dateFilter.from}
+                        onChange={(e) => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+                    />
                 </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">To:</span>
+                    <input
+                        type="date"
+                        className="border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border px-2 py-1"
+                        value={dateFilter.to}
+                        onChange={(e) => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+                    />
+                </div>
+            </div>
+        </div>
+
+            {
+        loading ? (
+            <div className="flex justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            </div>
+        ) : !selectedEmployee ? (
+            <div className="text-center p-12 bg-white rounded-lg shadow border-2 border-dashed border-gray-200">
+                <Calendar className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No Employee Selected</h3>
+                <p className="mt-1 text-sm text-gray-500">Select an employee above to view their attendance record.</p>
+            </div>
+        ) : attendanceRecords.length === 0 ? (
+            <div className="text-center p-8 bg-white rounded-lg shadow">
+                <p className="text-gray-500">No attendance records found for this employee.</p>
+            </div>
+        ) : (
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {attendanceRecords.map((record, index) => (
+                            <tr key={record.id || index} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.date}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${record.status === 'Present' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                        }`}>
+                                        {record.status}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {getEmployeeName(record.employee_id)}
+                                </td>
+                            </tr>
                         ))}
-                    </select>
-                </div>
-                
-                <div className="flex gap-4 mt-4 border-t pt-4">
-                    <div className="flex items-center gap-2">
-                        <label className="text-sm text-gray-600">From:</label>
-                        <input 
-                            type="date" 
-                            className="border border-gray-300 rounded-md px-2 py-1 text-sm"
-                            value={fromDate}
-                            onChange={(e) => setFromDate(e.target.value)}
-                        />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <label className="text-sm text-gray-600">To:</label>
-                        <input 
-                            type="date" 
-                            className="border border-gray-300 rounded-md px-2 py-1 text-sm"
-                            value={toDate}
-                            onChange={(e) => setToDate(e.target.value)}
-                        />
-                    </div>
-                    {(fromDate || toDate) && (
-                        <button 
-                            onClick={() => { setFromDate(''); setToDate(''); }}
-                            className="text-sm text-indigo-600 hover:text-indigo-800"
-                        >
-                            Clear Filters
-                        </button>
-                    )}
-                </div>
-            </div >
+                    </tbody>
+                </table>
+            </div>
+        )
+    }
 
-{
-    loading?(
-                <div className = "flex justify-center p-8" >
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                </div>
-            ) : !selectedEmployee ? (
-    <div className="text-center p-12 bg-white rounded-lg shadow border-2 border-dashed border-gray-200">
-        <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No Employee Selected</h3>
-        <p className="mt-1 text-sm text-gray-500">Select an employee above to view their attendance record.</p>
-    </div>
-) : attendanceRecords.length === 0 ? (
-    <div className="text-center p-8 bg-white rounded-lg shadow">
-        <p className="text-gray-500">No attendance records found for this employee.</p>
-    </div>
-) : (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-                <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-                {attendanceRecords.map((record, index) => (
-                    <tr key={record.id || index} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.date}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${record.status === 'Present' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                }`}>
-                                {record.status}
-                            </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {getEmployeeName(record.employee_id)}
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    </div>
-)}
+    {/* Mark Attendance Modal */ }
+    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Mark Attendance">
+        <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+                <label htmlFor="modal_employee" className="block text-sm font-medium text-gray-700 mb-1">Employee</label>
+                <select
+                    id="employee_id"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                    value={formData.employee_id}
+                    onChange={handleInputChange}
+                    required
+                >
+                    <option value="">Select Employee</option>
+                    {employees.map(emp => (
+                        <option key={emp.id} value={emp.id}>{emp.full_name}</option>
+                    ))}
+                </select>
+            </div>
 
-{/* Mark Attendance Modal */ }
-<Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Mark Attendance">
-    <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-            <label htmlFor="modal_employee" className="block text-sm font-medium text-gray-700 mb-1">Employee</label>
-            <select
-                id="employee_id"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                value={formData.employee_id}
+            <Input
+                label="Date"
+                id="date"
+                type="date"
+                value={formData.date}
                 onChange={handleInputChange}
                 required
-            >
-                <option value="">Select Employee</option>
-                {employees.map(emp => (
-                    <option key={emp.id} value={emp.id}>{emp.full_name}</option>
-                ))}
-            </select>
-        </div>
+            />
 
-        <Input
-            label="Date"
-            id="date"
-            type="date"
-            value={formData.date}
-            onChange={handleInputChange}
-            required
-        />
+            <div className="mb-4">
+                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                    id="status"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                >
+                    <option value="Present">Present</option>
+                    <option value="Absent">Absent</option>
+                </select>
+            </div>
 
-        <div className="mb-4">
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-                id="status"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                value={formData.status}
-                onChange={handleInputChange}
-            >
-                <option value="Present">Present</option>
-                <option value="Absent">Absent</option>
-            </select>
-        </div>
-
-        <div className="mt-6 flex justify-end gap-3">
-            <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button type="submit">Save</Button>
-        </div>
-    </form>
-</Modal>
+            <div className="mt-6 flex justify-end gap-3">
+                <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                <Button type="submit">Save</Button>
+            </div>
+        </form>
+    </Modal>
         </div >
     );
 };
